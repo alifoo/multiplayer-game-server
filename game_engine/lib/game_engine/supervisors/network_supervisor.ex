@@ -10,10 +10,10 @@ defmodule GameEngine.NetworkSupervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  def start_network(network_id) do
+  def start_network(player_id) do
     child_spec = %{
-      id: GameEngine.Network,
-      start: {GameEngine.Network, :start_link, [network_id]},
+      id: GameEngine.PlayerConnection,
+      start: {GameEngine.PlayerConnection, :start_link, [player_id]},
       restart: :transient
     }
 

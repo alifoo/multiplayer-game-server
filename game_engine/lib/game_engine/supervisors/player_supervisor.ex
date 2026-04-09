@@ -12,8 +12,8 @@ defmodule GameEngine.PlayerSupervisor do
 
   def start_player(player_id) do
     child_spec = %{
-      id: GameEngine.PlayerConnection,
-      start: {GameEngine.PlayerConnection, :start_link, [player_id]},
+      id: GameEngine.Player,
+      start: {GameEngine.Player, :start_link, [player_id]},
       restart: :transient
     }
 

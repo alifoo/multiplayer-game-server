@@ -2,7 +2,7 @@ defmodule GameEngine.PlayerConnection do
   use GenServer
 
   def start_link(player_id) do
-    name = {:via, Registry, {GameEngine.Registry, player_id}}
+    name = {:via, Registry, {GameEngine.Registry, {:player, player_id}}}
     GenServer.start_link(__MODULE__, player_id, name: name)
   end
 
