@@ -11,7 +11,6 @@ defmodule GameEngine.Application do
       # Starts a worker by calling: GameEngine.Worker.start_link(arg)
       # {GameEngine.Worker, arg}
       {Registry, keys: :unique, name: GameEngine.Registry},
-      GameEngine.NetworkSupervisor,
       GameEngine.WorldSupervisor,
       GameEngine.PlayerSupervisor
     ]

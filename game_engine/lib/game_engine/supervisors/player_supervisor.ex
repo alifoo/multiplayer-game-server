@@ -1,19 +1,19 @@
 defmodule GameEngine.PlayerSupervisor do
   use DynamicSupervisor
 
-  def start_link(args) do
-    DynamicSupervisor.start_link(__MODULE__, args, name: __MODULE__)
+  def start_link(_) do
+    DynamicSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   @impl true
-  def init(_args) do
+  def init(:ok) do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
   def start_player(player_id) do
     child_spec = %{
-      id: GameEngine.Player,
-      start: {GameEngine.Player, :start_link, [player_id]},
+      id: GameEngine.PlayerConnection,
+      start: {GameEngine.PlayerConnection, :start_link, [player_id]},
       restart: :transient
     }
 
