@@ -9,6 +9,8 @@ defmodule GameEngine.Application do
   def start(_type, _args) do
     :ets.new(:zone_state, [:set, :public, :named_table])
     :ets.new(:restart_tracker, [:set, :public, :named_table])
+    :ets.new(:dungeon_state, [:set, :public, :named_table])
+    :ets.new(:player_location_tracker, [:set, :public, :named_table])
 
     children = [
       # Starts a worker by calling: GameEngine.Worker.start_link(arg)
@@ -22,6 +24,8 @@ defmodule GameEngine.Application do
       },
       GameEngine.WorldSupervisor,
       GameEngine.PlayerSupervisor,
+      GameEngine.DungeonSupervisor,
+      GameEngine.Matchmaker,
       %{
         id: :zone_bootstrapper,
         start: {Task, :start_link, [fn -> boot_initial_zones() end]},
