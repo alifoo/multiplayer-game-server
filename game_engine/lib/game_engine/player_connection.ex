@@ -17,8 +17,12 @@ defmodule GameEngine.PlayerConnection do
   @impl true
   def init(player_id) do
     IO.puts("Starting PlayerConnection for player #{player_id}")
-    state = %{player_id: player_id, x: 0, y: 0, zone: :zone_1}
-    GameEngine.ZoneServer.add_player(state.zone, player_id)
+
+    start_x = Enum.random(1..20)
+    start_y = Enum.random(1..20)
+
+    state = %{player_id: player_id, x: start_x, y: start_y, zone: :zone_1}
+    GameEngine.ZoneServer.add_player(state.zone, player_id, start_x, start_y)
     {:ok, state}
   end
 
