@@ -44,7 +44,18 @@ defmodule GameEngine.ChaosMonkey do
 
       _ ->
         {:undefined, target_pid, _, _} = Enum.random(children)
-        IO.puts("Killed a random #{type} process with pid: #{inspect(target_pid)}")
+
+        case Registry.keys(GameEngine.Registry, target_pid) do
+          [{:player, player_id}] ->
+            :ets.insert(:restart_tracker, {player_id, :erlang.monotonic_time(:millisecond)})
+
+          [{:ZoneServer, zone_id}] ->
+            :ets.insert(:restart_tracker, {zone_id, :erlang.monotonic_time(:millisecond)})
+
+          _ ->
+            :ok
+        end
+
         Process.exit(target_pid, :kill)
     end
   end

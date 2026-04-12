@@ -30,6 +30,16 @@ defmodule GameEngine.ZoneServer do
   def init(zone_id) do
     :timer.send_interval(1000, self(), :tick)
 
+    case :ets.lookup(:restart_tracker, zone_id) do
+      [{^zone_id, killed_at}] ->
+        restart_time_ms = :erlang.monotonic_time(:millisecond) - killed_at
+        IO.puts("[RESTARTED] ZoneServer #{zone_id} — recovered in #{restart_time_ms} ms")
+        :ets.delete(:restart_tracker, zone_id)
+
+      [] ->
+        :ok
+    end
+
     players =
       case :ets.lookup(:zone_state, zone_id) do
         [{^zone_id, saved_players}] ->
