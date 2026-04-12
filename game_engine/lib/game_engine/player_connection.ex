@@ -14,6 +14,10 @@ defmodule GameEngine.PlayerConnection do
     GenServer.call(via(player_id), :get_state)
   end
 
+  def simulate_crash(player_id) do
+    GenServer.cast(via(player_id), :simulate_crash)
+  end
+
   @impl true
   def init({player_id, zone_id}) do
     IO.puts("Starting PlayerConnection for player #{player_id}")
@@ -31,6 +35,11 @@ defmodule GameEngine.PlayerConnection do
     new_state = %{state | x: x, y: y}
     GameEngine.ZoneServer.update_player_position(state.zone, state.player_id, x, y)
     {:noreply, new_state}
+  end
+
+  @impl true
+  def handle_cast(:simulate_crash, _state) do
+    1 / 0
   end
 
   @impl true
