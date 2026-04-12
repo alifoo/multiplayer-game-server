@@ -6,8 +6,8 @@ defmodule GameEngine.ZoneServer do
     GenServer.start_link(__MODULE__, zone_id, name: name)
   end
 
-  def add_player(zone, player_id, start_x, start_y) do
-    GenServer.cast(via(zone), {:add_player, player_id, start_x, start_y})
+  def add_player(zone, player_id, player_pid, start_x, start_y) do
+    GenServer.cast(via(zone), {:add_player, player_id, player_pid, start_x, start_y})
   end
 
   def remove_player(zone, player_id) do
@@ -29,8 +29,9 @@ defmodule GameEngine.ZoneServer do
   end
 
   @impl true
-  def handle_cast({:add_player, player_id, x, y}, state) do
-    players = Map.put(state.players, player_id, %{x: x, y: y})
+  def handle_cast({:add_player, player_id, player_pid, x, y}, state) do
+    Process.monitor(player_pid)
+    players = Map.put(state.players, player_id, %{x: x, y: y, pid: player_pid})
     {:noreply, %{state | players: players}}
   end
 
@@ -58,6 +59,15 @@ defmodule GameEngine.ZoneServer do
     end
 
     {:noreply, state}
+  end
+
+  @impl true
+  def handle_info({:DOWN, _ref, :process, dead_pid, reason}, state) do
+    IO.puts("Player process #{inspect(dead_pid)} has terminated with reason: #{inspect(reason)}")
+    {player_id, _} = Enum.find(state.players, fn {_, data} -> data.pid == dead_pid end)
+    players = Map.delete(state.players, player_id)
+
+    {:noreply, %{state | players: players}}
   end
 
   defp via(zone_id) do
