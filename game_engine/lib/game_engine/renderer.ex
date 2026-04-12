@@ -3,10 +3,10 @@ defmodule GameEngine.Renderer do
     # Clear terminal
     IO.write("\e[2J\e[H")
 
-    Enum.each(players, fn {_, %{x: x, y: y}} ->
+    Enum.each(players, fn {player_id, %{x: x, y: y}} ->
       safe_x = max(1, x)
       safe_y = max(1, y)
-      IO.write("\e[#{safe_y};#{safe_x}H@")
+      IO.write("\e[#{safe_y};#{safe_x}H#{player_id}")
     end)
 
     # Print the UI text on a line far below the "game board", like line 20
