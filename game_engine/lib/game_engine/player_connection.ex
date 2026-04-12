@@ -22,8 +22,8 @@ defmodule GameEngine.PlayerConnection do
   def init({player_id, zone_id}) do
     case :ets.lookup(:restart_tracker, player_id) do
       [{^player_id, killed_at}] ->
-        restart_time_ms = :erlang.monotonic_time(:millisecond) - killed_at
-        IO.puts("[RESTARTED] Player #{player_id} in zone #{zone_id} — recovered in #{restart_time_ms} ms")
+        restart_time_us = :erlang.monotonic_time(:microsecond) - killed_at
+        IO.puts("[RESTARTED] Player #{player_id} in zone #{zone_id} — recovered in #{restart_time_us} µs")
         :ets.delete(:restart_tracker, player_id)
 
       [] ->

@@ -47,10 +47,10 @@ defmodule GameEngine.ChaosMonkey do
 
         case Registry.keys(GameEngine.Registry, target_pid) do
           [{:player, player_id}] ->
-            :ets.insert(:restart_tracker, {player_id, :erlang.monotonic_time(:millisecond)})
+            :ets.insert(:restart_tracker, {player_id, :erlang.monotonic_time(:microsecond)})
 
           [{:ZoneServer, zone_id}] ->
-            :ets.insert(:restart_tracker, {zone_id, :erlang.monotonic_time(:millisecond)})
+            :ets.insert(:restart_tracker, {zone_id, :erlang.monotonic_time(:microsecond)})
 
           _ ->
             :ok

@@ -32,8 +32,8 @@ defmodule GameEngine.ZoneServer do
 
     case :ets.lookup(:restart_tracker, zone_id) do
       [{^zone_id, killed_at}] ->
-        restart_time_ms = :erlang.monotonic_time(:millisecond) - killed_at
-        IO.puts("[RESTARTED] ZoneServer #{zone_id} — recovered in #{restart_time_ms} ms")
+        restart_time_us = :erlang.monotonic_time(:microsecond) - killed_at
+        IO.puts("[RESTARTED] ZoneServer #{zone_id} — recovered in #{restart_time_us} µs")
         :ets.delete(:restart_tracker, zone_id)
 
       [] ->
@@ -43,10 +43,6 @@ defmodule GameEngine.ZoneServer do
     players =
       case :ets.lookup(:zone_state, zone_id) do
         [{^zone_id, saved_players}] ->
-          IO.puts(
-            "Restoring state for zone id: #{zone_id} with #{map_size(saved_players)} players"
-          )
-
           saved_players
 
         [] ->
@@ -101,13 +97,15 @@ defmodule GameEngine.ZoneServer do
 
   @impl true
   def handle_info({:DOWN, _ref, :process, dead_pid, reason}, state) do
-    {player_id, _} = Enum.find(state.players, fn {_, data} -> data.pid == dead_pid end)
+    case Enum.find(state.players, fn {_, data} -> data.pid == dead_pid end) do
+      {player_id, _} ->
+        IO.puts("Player id #{player_id} process has terminated with reason: #{inspect(reason)}")
+        players = Map.delete(state.players, player_id)
+        {:noreply, %{state | players: players}}
 
-    IO.puts("Player id #{player_id} process has terminated with reason: #{inspect(reason)}")
-
-    players = Map.delete(state.players, player_id)
-
-    {:noreply, %{state | players: players}}
+      nil ->
+        {:noreply, state}
+    end
   end
 
   defp via(zone_id) do
