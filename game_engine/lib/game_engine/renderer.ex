@@ -19,5 +19,6 @@ defmodule GameEngine.Renderer do
     end)
 
     IO.write("\e[21;1HPlayers online: #{map_size(players)}\n")
+    IO.write("\e[22;1HZone: #{current_focus()}\n")
   end
 end
