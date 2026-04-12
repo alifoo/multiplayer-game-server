@@ -33,11 +33,14 @@ defmodule GameEngine.ZoneServer do
     players =
       case :ets.lookup(:zone_state, zone_id) do
         [{^zone_id, saved_players}] ->
-          IO.puts("Restoring state for zone #{zone_id} with #{map_size(saved_players)} players")
+          IO.puts(
+            "Restoring state for zone id: #{zone_id} with #{map_size(saved_players)} players"
+          )
+
           saved_players
 
         [] ->
-          IO.puts("No saved state for zone #{zone_id}, starting fresh")
+          IO.puts("No saved state for zone id: #{zone_id}, starting fresh")
           %{}
       end
 
@@ -88,8 +91,10 @@ defmodule GameEngine.ZoneServer do
 
   @impl true
   def handle_info({:DOWN, _ref, :process, dead_pid, reason}, state) do
-    IO.puts("Player process #{inspect(dead_pid)} has terminated with reason: #{inspect(reason)}")
     {player_id, _} = Enum.find(state.players, fn {_, data} -> data.pid == dead_pid end)
+
+    IO.puts("Player id #{player_id} process has terminated with reason: #{inspect(reason)}")
+
     players = Map.delete(state.players, player_id)
 
     {:noreply, %{state | players: players}}
