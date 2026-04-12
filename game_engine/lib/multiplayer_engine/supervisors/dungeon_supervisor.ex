@@ -1,4 +1,4 @@
-defmodule GameEngine.DungeonSupervisor do
+defmodule MultiplayerEngine.DungeonSupervisor do
   use DynamicSupervisor
 
   def start_link(_) do
@@ -12,8 +12,8 @@ defmodule GameEngine.DungeonSupervisor do
 
   def create_dungeon(dungeon_id) do
     child_spec = %{
-      id: GameEngine.DungeonServer,
-      start: {GameEngine.DungeonServer, :start_link, [dungeon_id]},
+      id: MultiplayerEngine.DungeonServer,
+      start: {MultiplayerEngine.DungeonServer, :start_link, [dungeon_id]},
       restart: :transient
     }
 

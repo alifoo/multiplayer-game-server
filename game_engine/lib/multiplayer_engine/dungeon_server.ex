@@ -1,4 +1,4 @@
-defmodule GameEngine.DungeonServer do
+defmodule MultiplayerEngine.DungeonServer do
   use GenServer
 
   def start_link(dungeon_id) do
@@ -81,8 +81,8 @@ defmodule GameEngine.DungeonServer do
 
   @impl true
   def handle_info(:tick, state) do
-    if GameEngine.Renderer.current_focus() == state.dungeon_id do
-      GameEngine.Renderer.render(state.players)
+    if MultiplayerEngine.Renderer.current_focus() == state.dungeon_id do
+      MultiplayerEngine.Renderer.render(state.players)
     end
 
     {:noreply, state}
@@ -102,7 +102,7 @@ defmodule GameEngine.DungeonServer do
   end
 
   defp via(dungeon_id) do
-    {:via, Registry, {GameEngine.Registry, {:DungeonServer, dungeon_id}}}
+    {:via, Registry, {MultiplayerEngine.Registry, {:DungeonServer, dungeon_id}}}
   end
 
   defp backup_state(dungeon_id, players) do

@@ -1,4 +1,4 @@
-defmodule GameEngine.Matchmaker do
+defmodule MultiplayerEngine.Matchmaker do
   use GenServer
 
   @party_size 3
@@ -42,14 +42,22 @@ defmodule GameEngine.Matchmaker do
   end
 
   defp spawn_dungeon(dungeon_id, party) do
-    GameEngine.DungeonSupervisor.create_dungeon(dungeon_id)
+    MultiplayerEngine.DungeonSupervisor.create_dungeon(dungeon_id)
 
     Enum.each(party, fn player_id ->
-      player_state = GameEngine.Player.get_state(player_id)
-      [{pid, _}] = Registry.lookup(GameEngine.Registry, {:player, player_id})
+      player_state = MultiplayerEngine.Player.get_state(player_id)
+      [{pid, _}] = Registry.lookup(MultiplayerEngine.Registry, {:player, player_id})
 
-      GameEngine.ZoneServer.remove_player(player_state.zone, player_id)
-      GameEngine.DungeonServer.add_player(dungeon_id, player_id, pid, player_state.x, player_state.y, player_state.zone)
+      MultiplayerEngine.ZoneServer.remove_player(player_state.zone, player_id)
+
+      MultiplayerEngine.DungeonServer.add_player(
+        dungeon_id,
+        player_id,
+        pid,
+        player_state.x,
+        player_state.y,
+        player_state.zone
+      )
     end)
 
     IO.puts("[MATCHMAKER] Dungeon #{dungeon_id} created with party: #{inspect(party)}")

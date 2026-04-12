@@ -1,4 +1,4 @@
-defmodule GameEngine.ZoneServer do
+defmodule MultiplayerEngine.ZoneServer do
   use GenServer
 
   def start_link(zone_id) do
@@ -88,8 +88,8 @@ defmodule GameEngine.ZoneServer do
 
   @impl true
   def handle_info(:tick, state) do
-    if GameEngine.Renderer.current_focus() == state.zone_id do
-      GameEngine.Renderer.render(state.players)
+    if MultiplayerEngine.Renderer.current_focus() == state.zone_id do
+      MultiplayerEngine.Renderer.render(state.players)
     end
 
     {:noreply, state}
@@ -109,7 +109,7 @@ defmodule GameEngine.ZoneServer do
   end
 
   defp via(zone_id) do
-    {:via, Registry, {GameEngine.Registry, {:ZoneServer, zone_id}}}
+    {:via, Registry, {MultiplayerEngine.Registry, {:ZoneServer, zone_id}}}
   end
 
   defp backup_state(zone_id, players) do

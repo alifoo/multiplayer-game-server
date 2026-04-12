@@ -1,4 +1,4 @@
-defmodule GameEngine.Application do
+defmodule MultiplayerEngine.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
@@ -13,19 +13,19 @@ defmodule GameEngine.Application do
     :ets.new(:player_location_tracker, [:set, :public, :named_table])
 
     children = [
-      # Starts a worker by calling: GameEngine.Worker.start_link(arg)
-      # {GameEngine.Worker, arg}
-      {Registry, keys: :unique, name: GameEngine.Registry},
+      # Starts a worker by calling: MultiplayerEngine.Worker.start_link(arg)
+      # {MultiplayerEngine.Worker, arg}
+      {Registry, keys: :unique, name: MultiplayerEngine.Registry},
       %{
         id: :renderer_focus,
         start:
           {Agent, :start_link,
-           [fn -> %{focus: :zone_1, enabled: false} end, [name: GameEngine.Renderer]]}
+           [fn -> %{focus: :zone_1, enabled: false} end, [name: MultiplayerEngine.Renderer]]}
       },
-      GameEngine.WorldSupervisor,
-      GameEngine.PlayerSupervisor,
-      GameEngine.DungeonSupervisor,
-      GameEngine.Matchmaker,
+      MultiplayerEngine.WorldSupervisor,
+      MultiplayerEngine.PlayerSupervisor,
+      MultiplayerEngine.DungeonSupervisor,
+      MultiplayerEngine.Matchmaker,
       %{
         id: :zone_bootstrapper,
         start: {Task, :start_link, [fn -> boot_initial_zones() end]},
@@ -33,7 +33,7 @@ defmodule GameEngine.Application do
       }
     ]
 
-    opts = [strategy: :one_for_one, name: GameEngine.Supervisor]
+    opts = [strategy: :one_for_one, name: MultiplayerEngine.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
@@ -49,7 +49,7 @@ defmodule GameEngine.Application do
     }
 
     Enum.each(world_map, fn {zone_id, _info} ->
-      GameEngine.WorldSupervisor.start_zone(zone_id)
+      MultiplayerEngine.WorldSupervisor.start_zone(zone_id)
     end)
   end
 end

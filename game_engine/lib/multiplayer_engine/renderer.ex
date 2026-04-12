@@ -1,4 +1,4 @@
-defmodule GameEngine.Renderer do
+defmodule MultiplayerEngine.Renderer do
   def start, do: Agent.update(__MODULE__, fn state -> %{state | enabled: true} end)
   def stop, do: Agent.update(__MODULE__, fn state -> %{state | enabled: false} end)
   def active?, do: Agent.get(__MODULE__, fn state -> state.enabled end)
@@ -11,7 +11,7 @@ defmodule GameEngine.Renderer do
   def current_focus, do: Agent.get(__MODULE__, fn state -> state.focus end)
 
   def render_zone(zone_id) do
-    zone_id |> GameEngine.ZoneServer.get_players() |> render()
+    zone_id |> MultiplayerEngine.ZoneServer.get_players() |> render()
   end
 
   def render(players) do

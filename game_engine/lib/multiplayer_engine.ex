@@ -1,6 +1,6 @@
-defmodule GameEngine do
+defmodule MultiplayerEngine do
   @moduledoc """
-  Documentation for `GameEngine`.
+  Documentation for `MultiplayerEngine`.
   """
 
   @doc """
@@ -8,7 +8,7 @@ defmodule GameEngine do
 
   ## Examples
 
-      iex> GameEngine.hello()
+      iex> MultiplayerEngine.hello()
       :world
 
   """

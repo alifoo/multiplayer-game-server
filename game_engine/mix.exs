@@ -1,9 +1,9 @@
-defmodule GameEngine.MixProject do
+defmodule MultiplayerEngine.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :game_engine,
+      app: :multiplayer_engine,
       version: "0.1.0",
       elixir: "~> 1.19",
       start_permanent: Mix.env() == :prod,
@@ -15,7 +15,7 @@ defmodule GameEngine.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {GameEngine.Application, []}
+      mod: {MultiplayerEngine.Application, []}
     ]
   end
 

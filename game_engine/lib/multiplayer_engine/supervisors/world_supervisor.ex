@@ -1,4 +1,4 @@
-defmodule GameEngine.WorldSupervisor do
+defmodule MultiplayerEngine.WorldSupervisor do
   use DynamicSupervisor
 
   def start_link(args) do
@@ -12,8 +12,8 @@ defmodule GameEngine.WorldSupervisor do
 
   def start_zone(world_id) do
     child_spec = %{
-      id: GameEngine.ZoneServer,
-      start: {GameEngine.ZoneServer, :start_link, [world_id]},
+      id: MultiplayerEngine.ZoneServer,
+      start: {MultiplayerEngine.ZoneServer, :start_link, [world_id]},
       restart: :transient
     }
 

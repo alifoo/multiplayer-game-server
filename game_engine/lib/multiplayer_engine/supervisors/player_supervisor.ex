@@ -1,4 +1,4 @@
-defmodule GameEngine.PlayerSupervisor do
+defmodule MultiplayerEngine.PlayerSupervisor do
   use DynamicSupervisor
 
   def start_link(_) do
@@ -13,7 +13,7 @@ defmodule GameEngine.PlayerSupervisor do
   def create_player(player_id, zone_id) do
     child_spec = %{
       id: player_id,
-      start: {GameEngine.Player, :start_link, [player_id, zone_id]},
+      start: {MultiplayerEngine.Player, :start_link, [player_id, zone_id]},
       restart: :transient
     }
 
