@@ -1,4 +1,4 @@
-defmodule GameEngine.PlayerConnection do
+defmodule GameEngine.Player do
   use GenServer
 
   def start_link(player_id, zone_id) do
@@ -23,7 +23,11 @@ defmodule GameEngine.PlayerConnection do
     case :ets.lookup(:restart_tracker, player_id) do
       [{^player_id, killed_at}] ->
         restart_time_us = :erlang.monotonic_time(:microsecond) - killed_at
-        IO.puts("[RESTARTED] Player #{player_id} in zone #{zone_id} — recovered in #{restart_time_us} µs")
+
+        IO.puts(
+          "[RESTARTED] Player #{player_id} in zone #{zone_id} — recovered in #{restart_time_us} µs"
+        )
+
         :ets.delete(:restart_tracker, player_id)
 
       [] ->
@@ -33,9 +37,19 @@ defmodule GameEngine.PlayerConnection do
     start_x = Enum.random(1..150)
     start_y = Enum.random(1..150)
 
-    state = %{player_id: player_id, x: start_x, y: start_y, zone: zone_id}
-    GameEngine.ZoneServer.add_player(zone_id, player_id, self(), start_x, start_y)
-    {:ok, state}
+    case :ets.lookup(:player_location_tracker, player_id) do
+      [{^player_id, dungeon_id, _x, _y, origin_zone}] ->
+        IO.puts("[RECOVERED] Player #{player_id} rejoining dungeon #{dungeon_id}")
+        GameEngine.DungeonServer.add_player(dungeon_id, player_id, self(), start_x, start_y, origin_zone)
+        :ets.delete(:player_location_tracker, player_id)
+        state = %{player_id: player_id, x: start_x, y: start_y, zone: origin_zone}
+        {:ok, state}
+
+      [] ->
+        state = %{player_id: player_id, x: start_x, y: start_y, zone: zone_id}
+        GameEngine.ZoneServer.add_player(zone_id, player_id, self(), start_x, start_y)
+        {:ok, state}
+    end
   end
 
   @impl true
