@@ -28,17 +28,15 @@ defmodule GameEngine.Application do
     IO.puts("Bootstrapping initial zones...")
 
     world_map = %{
-      "zone_1" => %{name: "Green Fields", description: "A peaceful grassy area."},
-      "zone_2" => %{name: "Dark Forest", description: "A spooky, dense forest."},
-      "zone_3" => %{name: "Crystal Caves", description: "Shiny caves filled with crystals."},
-      "zone_4" => %{name: "Volcanic Wasteland", description: "A harsh, fiery landscape."},
-      "zone_5" => %{name: "Sky Islands", description: "Floating islands in the sky."}
+      :zone_1 => %{name: "Green Fields", description: "A peaceful grassy area."},
+      :zone_2 => %{name: "Dark Forest", description: "A spooky, dense forest."},
+      :zone_3 => %{name: "Crystal Caves", description: "Shiny caves filled with crystals."},
+      :zone_4 => %{name: "Volcanic Wasteland", description: "A harsh, fiery landscape."},
+      :zone_5 => %{name: "Sky Islands", description: "Floating islands in the sky."}
     }
 
     Enum.each(world_map, fn {zone_id, _info} ->
       GameEngine.WorldSupervisor.start_zone(zone_id)
     end)
-
-    GameEngine.WorldSupervisor.start_zone(:zone_1)
   end
 end

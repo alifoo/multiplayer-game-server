@@ -20,7 +20,7 @@ defmodule GameEngine.ZoneServer do
 
   @impl true
   def init(zone_id) do
-    :timer.send_interval(100, self(), :tick)
+    :timer.send_interval(1000, self(), :tick)
     {:ok, %{zone_id: zone_id, players: %{}, state: :active}}
   end
 
