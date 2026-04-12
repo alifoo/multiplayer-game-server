@@ -7,6 +7,8 @@ defmodule GameEngine.Application do
 
   @impl true
   def start(_type, _args) do
+    :ets.new(:zone_state, [:set, :public, :named_table])
+
     children = [
       # Starts a worker by calling: GameEngine.Worker.start_link(arg)
       # {GameEngine.Worker, arg}
