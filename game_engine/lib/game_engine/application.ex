@@ -15,7 +15,9 @@ defmodule GameEngine.Application do
       {Registry, keys: :unique, name: GameEngine.Registry},
       %{
         id: :renderer_focus,
-        start: {Agent, :start_link, [fn -> :zone_1 end, [name: GameEngine.Renderer]]}
+        start:
+          {Agent, :start_link,
+           [fn -> %{focus: :zone_1, enabled: false} end, [name: GameEngine.Renderer]]}
       },
       GameEngine.WorldSupervisor,
       GameEngine.PlayerSupervisor,
