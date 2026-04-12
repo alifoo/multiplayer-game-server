@@ -1,6 +1,14 @@
 defmodule GameEngine.PlayerConnection do
   use GenServer
 
+  @restart_tracker :player_restart_tracker
+
+  def ensure_tracker_exists do
+    if :ets.whereis(@restart_tracker) == :undefined do
+      :ets.new(@restart_tracker, [:named_table, :public, :set])
+    end
+  end
+
   def start_link(player_id, zone_id) do
     name = via(player_id)
     GenServer.start_link(__MODULE__, {player_id, zone_id}, name: name)
@@ -20,12 +28,28 @@ defmodule GameEngine.PlayerConnection do
 
   @impl true
   def init({player_id, zone_id}) do
-    IO.puts("Starting PlayerConnection for player #{player_id} in zone #{zone_id}")
+    ensure_tracker_exists()
+    restart_count = increment_restart_count(player_id)
+    started_at = DateTime.utc_now()
+
+    if restart_count == 1 do
+      IO.puts("[STARTED] PlayerConnection for player #{player_id} in zone #{zone_id}")
+    else
+      IO.puts("[RESTARTED] PlayerConnection for player #{player_id} in zone #{zone_id} (restart ##{restart_count - 1})")
+    end
 
     start_x = Enum.random(1..150)
     start_y = Enum.random(1..150)
 
-    state = %{player_id: player_id, x: start_x, y: start_y, zone: zone_id}
+    state = %{
+      player_id: player_id,
+      x: start_x,
+      y: start_y,
+      zone: zone_id,
+      started_at: started_at,
+      restart_count: restart_count - 1
+    }
+
     GameEngine.ZoneServer.add_player(zone_id, player_id, self(), start_x, start_y)
     {:ok, state}
   end
@@ -55,5 +79,9 @@ defmodule GameEngine.PlayerConnection do
 
   defp via(player_id) do
     {:via, Registry, {GameEngine.Registry, {:player, player_id}}}
+  end
+
+  defp increment_restart_count(player_id) do
+    :ets.update_counter(@restart_tracker, player_id, {2, 1}, {player_id, 0})
   end
 end

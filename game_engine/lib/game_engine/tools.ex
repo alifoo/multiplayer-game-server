@@ -44,6 +44,7 @@ defmodule GameEngine.ChaosMonkey do
 
       _ ->
         {:undefined, target_pid, _, _} = Enum.random(children)
+        IO.puts("Killed a random #{type} process with pid: #{inspect(target_pid)}")
         Process.exit(target_pid, :kill)
     end
   end
