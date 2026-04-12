@@ -11,6 +11,10 @@ defmodule GameEngine.Application do
       # Starts a worker by calling: GameEngine.Worker.start_link(arg)
       # {GameEngine.Worker, arg}
       {Registry, keys: :unique, name: GameEngine.Registry},
+      %{
+        id: :renderer_focus,
+        start: {Agent, :start_link, [fn -> :zone_1 end, [name: GameEngine.Renderer]]}
+      },
       GameEngine.WorldSupervisor,
       GameEngine.PlayerSupervisor,
       %{

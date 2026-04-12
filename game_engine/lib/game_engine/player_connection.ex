@@ -1,9 +1,9 @@
 defmodule GameEngine.PlayerConnection do
   use GenServer
 
-  def start_link(player_id) do
-    name = {:via, Registry, {GameEngine.Registry, {:player, player_id}}}
-    GenServer.start_link(__MODULE__, player_id, name: name)
+  def start_link(player_id, zone_id) do
+    name = via(player_id)
+    GenServer.start_link(__MODULE__, {player_id, zone_id}, name: name)
   end
 
   def move(player_id, x, y) do
@@ -15,14 +15,14 @@ defmodule GameEngine.PlayerConnection do
   end
 
   @impl true
-  def init(player_id) do
+  def init({player_id, zone_id}) do
     IO.puts("Starting PlayerConnection for player #{player_id}")
 
     start_x = Enum.random(2..19)
     start_y = Enum.random(2..19)
 
-    state = %{player_id: player_id, x: start_x, y: start_y, zone: :zone_1}
-    GameEngine.ZoneServer.add_player(state.zone, player_id, start_x, start_y)
+    state = %{player_id: player_id, x: start_x, y: start_y, zone: zone_id}
+    GameEngine.ZoneServer.add_player(zone_id, player_id, start_x, start_y)
     {:ok, state}
   end
 

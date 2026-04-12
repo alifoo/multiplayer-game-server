@@ -1,4 +1,12 @@
 defmodule GameEngine.Renderer do
+  def focus_zone(zone), do: Agent.update(__MODULE__, fn _ -> zone end)
+  def current_focus(), do: Agent.get(__MODULE__, fn state -> state end)
+
+  def render_zone(zone_id) do
+    focus_zone(zone_id)
+    zone_id |> GameEngine.ZoneServer.get_players() |> render()
+  end
+
   def render(players) do
     IO.write("\e[2J\e[H")
 

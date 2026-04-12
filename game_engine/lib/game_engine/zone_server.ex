@@ -18,6 +18,10 @@ defmodule GameEngine.ZoneServer do
     GenServer.cast(via(zone), {:update_position, player_id, x, y})
   end
 
+  def get_players(zone) do
+    GenServer.call(via(zone), :get_players)
+  end
+
   @impl true
   def init(zone_id) do
     :timer.send_interval(1000, self(), :tick)
@@ -43,8 +47,16 @@ defmodule GameEngine.ZoneServer do
   end
 
   @impl true
+  def handle_call(:get_players, _from, state) do
+    {:reply, state.players, state}
+  end
+
+  @impl true
   def handle_info(:tick, state) do
-    GameEngine.Renderer.render(state.players)
+    if GameEngine.Renderer.current_focus() == state.zone_id do
+      GameEngine.Renderer.render(state.players)
+    end
+
     {:noreply, state}
   end
 

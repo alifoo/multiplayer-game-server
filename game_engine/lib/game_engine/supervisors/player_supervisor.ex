@@ -10,10 +10,10 @@ defmodule GameEngine.PlayerSupervisor do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  def create_player(player_id) do
+  def create_player(player_id, zone_id) do
     child_spec = %{
       id: GameEngine.PlayerConnection,
-      start: {GameEngine.PlayerConnection, :start_link, [player_id]},
+      start: {GameEngine.PlayerConnection, :start_link, [player_id, zone_id]},
       restart: :transient
     }
 
