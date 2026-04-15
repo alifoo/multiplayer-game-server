@@ -1,8 +1,4 @@
 defmodule MultiplayerEngine.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
-  @moduledoc false
-
   use Application
 
   @impl true
@@ -13,15 +9,7 @@ defmodule MultiplayerEngine.Application do
     :ets.new(:player_location_tracker, [:set, :public, :named_table])
 
     children = [
-      # Starts a worker by calling: MultiplayerEngine.Worker.start_link(arg)
-      # {MultiplayerEngine.Worker, arg}
       {Registry, keys: :unique, name: MultiplayerEngine.Registry},
-      %{
-        id: :renderer_focus,
-        start:
-          {Agent, :start_link,
-           [fn -> %{focus: :zone_1, enabled: false} end, [name: MultiplayerEngine.Renderer]]}
-      },
       MultiplayerEngine.WorldSupervisor,
       MultiplayerEngine.PlayerSupervisor,
       MultiplayerEngine.DungeonSupervisor,
