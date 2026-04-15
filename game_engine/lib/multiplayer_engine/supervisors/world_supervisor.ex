@@ -7,14 +7,14 @@ defmodule MultiplayerEngine.WorldSupervisor do
 
   @impl true
   def init(_args) do
-    DynamicSupervisor.init(strategy: :one_for_one)
+    DynamicSupervisor.init(strategy: :one_for_one, max_restarts: 1000, max_seconds: 5)
   end
 
   def start_zone(world_id) do
     child_spec = %{
       id: MultiplayerEngine.ZoneServer,
       start: {MultiplayerEngine.ZoneServer, :start_link, [world_id]},
-      restart: :transient
+      restart: :permanent
     }
 
     DynamicSupervisor.start_child(__MODULE__, child_spec)
