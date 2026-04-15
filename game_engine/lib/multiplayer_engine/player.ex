@@ -20,36 +20,12 @@ defmodule MultiplayerEngine.Player do
 
   @impl true
   def init({player_id, zone_id}) do
-    case :ets.lookup(:restart_tracker, player_id) do
-      [{^player_id, killed_at}] ->
-        restart_time_us = :erlang.monotonic_time(:microsecond) - killed_at
-
-        IO.puts(
-          "[RESTARTED] Player #{player_id} in zone #{zone_id} — recovered in #{restart_time_us} µs"
-        )
-
-        :ets.delete(:restart_tracker, player_id)
-
-      [] ->
-        IO.puts("[STARTED] Player #{player_id} in zone #{zone_id}")
-    end
+    check_restart_tracker(player_id, zone_id)
 
     start_x = Enum.random(1..150)
     start_y = Enum.random(1..150)
 
-    case :ets.lookup(:player_location_tracker, player_id) do
-      [{^player_id, dungeon_id, _x, _y, origin_zone}] ->
-        IO.puts("[RECOVERED] Player #{player_id} rejoining dungeon #{dungeon_id}")
-        MultiplayerEngine.DungeonServer.add_player(dungeon_id, player_id, self(), start_x, start_y, origin_zone)
-        :ets.delete(:player_location_tracker, player_id)
-        state = %{player_id: player_id, x: start_x, y: start_y, zone: origin_zone}
-        {:ok, state}
-
-      [] ->
-        state = %{player_id: player_id, x: start_x, y: start_y, zone: zone_id}
-        MultiplayerEngine.ZoneServer.add_player(zone_id, player_id, self(), start_x, start_y)
-        {:ok, state}
-    end
+    resolve_location(player_id, zone_id, start_x, start_y)
   end
 
   @impl true
@@ -60,8 +36,8 @@ defmodule MultiplayerEngine.Player do
   end
 
   @impl true
-  def handle_cast(:simulate_crash, _state) do
-    1 / 0
+  def handle_cast(:simulate_crash, state) do
+    raise "Simulated crash for player #{state.player_id}"
   end
 
   @impl true
@@ -77,5 +53,44 @@ defmodule MultiplayerEngine.Player do
 
   defp via(player_id) do
     {:via, Registry, {MultiplayerEngine.Registry, {:player, player_id}}}
+  end
+
+  defp check_restart_tracker(player_id, zone_id) do
+    case :ets.lookup(:restart_tracker, player_id) do
+      [{^player_id, killed_at}] ->
+        restart_time_us = :erlang.monotonic_time(:microsecond) - killed_at
+
+        IO.puts(
+          "[RESTARTED] Player #{player_id} in zone #{zone_id}: recovered in #{restart_time_us} µs"
+        )
+
+        :ets.delete(:restart_tracker, player_id)
+
+      [] ->
+        IO.puts("[STARTED] Player #{player_id} in zone #{zone_id}")
+    end
+  end
+
+  defp resolve_location(player_id, zone_id, x, y) do
+    case :ets.lookup(:player_location_tracker, player_id) do
+      [{^player_id, dungeon_id, _x, _y, origin_zone}] ->
+        IO.puts("[RECOVERED] Player #{player_id} rejoining dungeon #{dungeon_id}")
+
+        MultiplayerEngine.DungeonServer.add_player(
+          dungeon_id,
+          player_id,
+          self(),
+          x,
+          y,
+          origin_zone
+        )
+
+        :ets.delete(:player_location_tracker, player_id)
+        {:ok, %{player_id: player_id, x: x, y: y, zone: origin_zone}}
+
+      [] ->
+        MultiplayerEngine.ZoneServer.add_player(zone_id, player_id, self(), x, y)
+        {:ok, %{player_id: player_id, x: x, y: y, zone: zone_id}}
+    end
   end
 end
