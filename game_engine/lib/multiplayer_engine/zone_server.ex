@@ -28,28 +28,8 @@ defmodule MultiplayerEngine.ZoneServer do
 
   @impl true
   def init(zone_id) do
-    :timer.send_interval(1000, self(), :tick)
-
-    case :ets.lookup(:restart_tracker, zone_id) do
-      [{^zone_id, killed_at}] ->
-        restart_time_us = :erlang.monotonic_time(:microsecond) - killed_at
-        IO.puts("[RESTARTED] ZoneServer #{zone_id} — recovered in #{restart_time_us} µs")
-        :ets.delete(:restart_tracker, zone_id)
-
-      [] ->
-        :ok
-    end
-
-    players =
-      case :ets.lookup(:zone_state, zone_id) do
-        [{^zone_id, saved_players}] ->
-          saved_players
-
-        [] ->
-          IO.puts("No saved state for zone id: #{zone_id}, starting fresh")
-          %{}
-      end
-
+    check_restart_tracker(zone_id)
+    players = restore_players(zone_id)
     {:ok, %{zone_id: zone_id, players: players, state: :active}}
   end
 
@@ -87,15 +67,6 @@ defmodule MultiplayerEngine.ZoneServer do
   end
 
   @impl true
-  def handle_info(:tick, state) do
-    if MultiplayerEngine.Renderer.current_focus() == state.zone_id do
-      MultiplayerEngine.Renderer.render(state.players)
-    end
-
-    {:noreply, state}
-  end
-
-  @impl true
   def handle_info({:DOWN, _ref, :process, dead_pid, reason}, state) do
     case Enum.find(state.players, fn {_, data} -> data.pid == dead_pid end) do
       {player_id, _} ->
@@ -114,5 +85,28 @@ defmodule MultiplayerEngine.ZoneServer do
 
   defp backup_state(zone_id, players) do
     :ets.insert(:zone_state, {zone_id, players})
+  end
+
+  defp check_restart_tracker(zone_id) do
+    case :ets.lookup(:restart_tracker, zone_id) do
+      [{^zone_id, killed_at}] ->
+        restart_time_us = :erlang.monotonic_time(:microsecond) - killed_at
+        IO.puts("[RESTARTED] ZoneServer #{zone_id}: recovered in #{restart_time_us} µs")
+        :ets.delete(:restart_tracker, zone_id)
+
+      [] ->
+        :ok
+    end
+  end
+
+  defp restore_players(zone_id) do
+    case :ets.lookup(:zone_state, zone_id) do
+      [{^zone_id, saved_players}] ->
+        saved_players
+
+      [] ->
+        IO.puts("No saved state for zone id: #{zone_id}, starting fresh")
+        %{}
+    end
   end
 end

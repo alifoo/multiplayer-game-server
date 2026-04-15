@@ -7,7 +7,7 @@ defmodule MultiplayerEngine.PlayerSupervisor do
 
   @impl true
   def init(:ok) do
-    DynamicSupervisor.init(strategy: :one_for_one)
+    DynamicSupervisor.init(strategy: :one_for_one, max_restarts: 1000, max_seconds: 5)
   end
 
   def create_player(player_id, zone_id) do

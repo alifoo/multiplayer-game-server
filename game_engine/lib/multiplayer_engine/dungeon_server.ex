@@ -7,7 +7,10 @@ defmodule MultiplayerEngine.DungeonServer do
   end
 
   def add_player(dungeon_id, player_id, player_pid, start_x, start_y, origin_zone) do
-    GenServer.cast(via(dungeon_id), {:add_player, player_id, player_pid, start_x, start_y, origin_zone})
+    GenServer.cast(
+      via(dungeon_id),
+      {:add_player, player_id, player_pid, start_x, start_y, origin_zone}
+    )
   end
 
   def remove_player(dungeon_id, player_id) do
@@ -28,20 +31,8 @@ defmodule MultiplayerEngine.DungeonServer do
 
   @impl true
   def init(dungeon_id) do
-    :timer.send_interval(1000, self(), :tick)
-
     check_restart_tracker(dungeon_id)
-
-    players =
-      case :ets.lookup(:dungeon_state, dungeon_id) do
-        [{^dungeon_id, saved_players}] ->
-          saved_players
-
-        [] ->
-          IO.puts("No saved state for dungeon id: #{dungeon_id}, starting fresh")
-          %{}
-      end
-
+    players = restore_players(dungeon_id)
     {:ok, %{dungeon_id: dungeon_id, players: players, state: :active}}
   end
 
@@ -53,7 +44,9 @@ defmodule MultiplayerEngine.DungeonServer do
   @impl true
   def handle_cast({:add_player, player_id, player_pid, x, y, origin_zone}, state) do
     Process.monitor(player_pid)
-    players = Map.put(state.players, player_id, %{x: x, y: y, pid: player_pid, origin_zone: origin_zone})
+
+    players =
+      Map.put(state.players, player_id, %{x: x, y: y, pid: player_pid, origin_zone: origin_zone})
 
     backup_state(state.dungeon_id, players)
     track_player_location(state.dungeon_id, player_id, x, y, origin_zone)
@@ -77,15 +70,6 @@ defmodule MultiplayerEngine.DungeonServer do
   @impl true
   def handle_call(:get_players, _from, state) do
     {:reply, state.players, state}
-  end
-
-  @impl true
-  def handle_info(:tick, state) do
-    if MultiplayerEngine.Renderer.current_focus() == state.dungeon_id do
-      MultiplayerEngine.Renderer.render(state.players)
-    end
-
-    {:noreply, state}
   end
 
   @impl true
@@ -117,7 +101,7 @@ defmodule MultiplayerEngine.DungeonServer do
     case :ets.lookup(:restart_tracker, dungeon_id) do
       [{^dungeon_id, killed_at}] ->
         restart_time_us = :erlang.monotonic_time(:microsecond) - killed_at
-        IO.puts("[RESTARTED] DungeonServer #{dungeon_id} — recovered in #{restart_time_us} µs")
+        IO.puts("[RESTARTED] DungeonServer #{dungeon_id}: recovered in #{restart_time_us} µs")
         :ets.delete(:restart_tracker, dungeon_id)
 
       [] ->
@@ -125,5 +109,14 @@ defmodule MultiplayerEngine.DungeonServer do
     end
   end
 
+  defp restore_players(dungeon_id) do
+    case :ets.lookup(:dungeon_state, dungeon_id) do
+      [{^dungeon_id, saved_players}] ->
+        saved_players
 
+      [] ->
+        IO.puts("No saved state for dungeon id: #{dungeon_id}, starting fresh")
+        %{}
+    end
+  end
 end
