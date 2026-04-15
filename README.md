@@ -1,4 +1,4 @@
-# multiplayer server
+# Fault-Tolerant Game Server Architecture Using Elixir and OTP
 
-Spinning up a multiplayer server in elixir to learn how to use GenServers and supervision trees.
+This repository was developed as a prototype for an academic article submission for UNIGOU (INCBAC), for the Scientific Training of 2026.
 
